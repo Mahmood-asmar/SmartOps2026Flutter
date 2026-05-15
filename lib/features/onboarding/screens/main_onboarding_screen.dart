@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smartops/core/theme/app_colors.dart';
+import 'package:smartops/features/auth/screens/login.dart';
 import 'package:smartops/features/onboarding/widgets/onboarding_dots.dart';
 import 'package:smartops/features/onboarding/widgets/onboarding_page.dart';
 
@@ -45,7 +46,9 @@ class _MainOnboardingScreenState extends State<MainOnboardingScreen> {
         curve: Curves.easeInOut,
       );
     } else {
-      // TODO: Navigate to login screen.
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context){
+        return LoginScreen();
+      }));
     }
   }
 
