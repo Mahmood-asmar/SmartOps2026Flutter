@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:smartops/features/auth/screen/login.dart';
+import 'package:smartops/features/auth/screens/login.dart';
 
 import '../widgets/auth_button.dart';
 import '../widgets/auth_footer.dart';

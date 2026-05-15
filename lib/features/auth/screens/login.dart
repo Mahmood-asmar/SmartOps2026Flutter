@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:smartops/features/auth/screen/forgetpass.dart';
-import 'package:smartops/features/auth/screen/signup.dart';
+import 'package:smartops/features/auth/screens/forgetpass.dart';
+import 'package:smartops/features/auth/screens/signup.dart';
 import '../widgets/auth_layout.dart';
 import '../widgets/auth_header.dart';
 import '../widgets/auth_text_field.dart';

@@ -29,8 +29,10 @@ class AuthLayout extends StatelessWidget {
                   const SizedBox(height: 36),
                   child,
                   const SizedBox(height: 24),
-                  if (footer != null) footer!,
-                  const SizedBox(height: 24),
+                  if (footer != null) ...[
+                    footer!,
+                    const SizedBox(height: 24),
+                  ]
                 ],
               ),
             ),
