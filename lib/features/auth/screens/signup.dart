@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:smartops/features/auth/screens/login.dart';
+import 'package:smartops/core/validators/auth_validators.dart';
 
 import '../widgets/auth_button.dart';
 import '../widgets/auth_footer.dart';
@@ -7,6 +7,7 @@ import '../widgets/auth_header.dart';
 import '../widgets/auth_layout.dart';
 import '../widgets/auth_text_field.dart';
 import '../widgets/role_selector.dart';
+import 'login.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -16,15 +17,17 @@ class SignupScreen extends StatefulWidget {
 }
 
 class _SignupScreenState extends State<SignupScreen> {
+  final _formKey = GlobalKey<FormState>();
+
   String selectedRole = 'Admin';
   bool isPasswordHidden = true;
   bool isConfirmPasswordHidden = true;
+  bool isLoading = false;
 
-  final TextEditingController fullNameController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController =
-      TextEditingController();
+  final fullNameController = TextEditingController();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  final confirmPasswordController = TextEditingController();
 
   @override
   void dispose() {
@@ -35,139 +38,118 @@ class _SignupScreenState extends State<SignupScreen> {
     super.dispose();
   }
 
-  void _register() {
-    final fullName = fullNameController.text.trim();
-    final email = emailController.text.trim();
-    final password = passwordController.text;
-    final confirmPassword = confirmPasswordController.text;
+  Future<void> signup() async {
+    if (!_formKey.currentState!.validate()) return;
 
-    String? errorMessage;
-    if (fullName.isEmpty ||
-        email.isEmpty ||
-        password.isEmpty ||
-        confirmPassword.isEmpty) {
-      errorMessage = 'Please fill in all fields.';
-    } else if (!email.contains('@') || !email.contains('.')) {
-      errorMessage = 'Please enter a valid email address.';
-    } else if (password.length < 6) {
-      errorMessage = 'Password must be at least 6 characters.';
-    } else if (password != confirmPassword) {
-      errorMessage = 'Passwords do not match.';
-    }
+    setState(() => isLoading = true);
 
-    if (errorMessage != null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(errorMessage)));
-      return;
-    }
+    await Future.delayed(const Duration(seconds: 1));
+
+    if (!mounted) return;
+
+    setState(() => isLoading = false);
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Account initialized for $fullName.')),
+      const SnackBar(content: Text('Signup validation successful')),
     );
-    Navigator.pop(context);
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return AuthLayout(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const AuthHeader(
-            title: 'Create account',
-            subtitle: 'Register to start using SmartOps',
-          ),
-
-          const SizedBox(height: 28),
-
-          AuthTextField(
-            label: 'Full Name',
-            hint: 'Enter your full name',
-            controller: fullNameController,
-            prefixIcon: Icons.person_outline,
-          ),
-
-          const SizedBox(height: 18),
-
-          AuthTextField(
-            label: 'Email',
-            hint: 'name@gmail.com',
-            controller: emailController,
-            keyboardType: TextInputType.emailAddress,
-            prefixIcon: Icons.email_outlined,
-          ),
-
-          const SizedBox(height: 18),
-
-          RoleSelector(
-            selectedRole: selectedRole,
-            onChanged: (role) {
-              setState(() {
-                selectedRole = role;
-              });
-            },
-          ),
-
-          const SizedBox(height: 18),
-
-          AuthTextField(
-            label: 'Password',
-            hint: 'Create a password',
-            controller: passwordController,
-            obscureText: isPasswordHidden,
-            prefixIcon: Icons.lock_outline,
-            suffixIcon: isPasswordHidden
-                ? Icons.visibility_off_outlined
-                : Icons.visibility_outlined,
-            onSuffixTap: () {
-              setState(() {
-                isPasswordHidden = !isPasswordHidden;
-              });
-            },
-          ),
-
-          const SizedBox(height: 18),
-
-          AuthTextField(
-            label: 'Confirm Password',
-            hint: 'Confirm your password',
-            controller: confirmPasswordController,
-            obscureText: isConfirmPasswordHidden,
-            prefixIcon: Icons.lock_outline,
-            suffixIcon: isConfirmPasswordHidden
-                ? Icons.visibility_off_outlined
-                : Icons.visibility_outlined,
-            onSuffixTap: () {
-              setState(() {
-                isConfirmPasswordHidden = !isConfirmPasswordHidden;
-              });
-            },
-          ),
-
-          const SizedBox(height: 24),
-
-          AuthButton(
-            text: 'Initialize Account',
-            icon: Icons.arrow_forward,
-            onPressed: _register,
-          ),
-
-          const SizedBox(height: 16),
-
-          AuthFooter(
-            text: 'Already part of SmartOps?',
-            actionText: 'Login',
-            onTap: () {
-              Navigator.pushReplacement(
-                 context,
-                 MaterialPageRoute(
-                   builder: (_) => const LoginScreen(),
-                 ),
-              );
-            },
-          ),
-        ],
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const AuthHeader(
+              title: 'Create Account',
+              subtitle: 'Register to start using SmartOps',
+            ),
+            const SizedBox(height: 28),
+            AuthTextField(
+              label: 'Full Name',
+              hint: 'Enter your full name',
+              controller: fullNameController,
+              prefixIcon: Icons.person_outline,
+              validator: AuthValidators.fullName,
+            ),
+            const SizedBox(height: 18),
+            AuthTextField(
+              label: 'Email',
+              hint: 'Enter your email',
+              controller: emailController,
+              keyboardType: TextInputType.emailAddress,
+              prefixIcon: Icons.email_outlined,
+              validator: AuthValidators.email,
+            ),
+            const SizedBox(height: 18),
+            RoleSelector(
+              selectedRole: selectedRole,
+              onChanged: (role) {
+                setState(() => selectedRole = role);
+              },
+            ),
+            const SizedBox(height: 18),
+            AuthTextField(
+              label: 'Password',
+              hint: 'Create a password',
+              controller: passwordController,
+              obscureText: isPasswordHidden,
+              prefixIcon: Icons.lock_outline,
+              suffixIcon: isPasswordHidden
+                  ? Icons.visibility_off_outlined
+                  : Icons.visibility_outlined,
+              onSuffixTap: () {
+                setState(() => isPasswordHidden = !isPasswordHidden);
+              },
+              validator: AuthValidators.password,
+            ),
+            const SizedBox(height: 18),
+            AuthTextField(
+              label: 'Confirm Password',
+              hint: 'Confirm your password',
+              controller: confirmPasswordController,
+              obscureText: isConfirmPasswordHidden,
+              prefixIcon: Icons.lock_outline,
+              suffixIcon: isConfirmPasswordHidden
+                  ? Icons.visibility_off_outlined
+                  : Icons.visibility_outlined,
+              onSuffixTap: () {
+                setState(() {
+                  isConfirmPasswordHidden = !isConfirmPasswordHidden;
+                });
+              },
+              validator: (value) => AuthValidators.confirmPassword(
+                value,
+                passwordController.text,
+              ),
+            ),
+            const SizedBox(height: 24),
+            AuthButton(
+              text: 'Create Account',
+              icon: Icons.arrow_forward,
+              isLoading: isLoading,
+              onPressed: signup,
+            ),
+            const SizedBox(height: 16),
+            AuthFooter(
+              text: 'Already have an account?',
+              actionText: 'Login',
+              onTap: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

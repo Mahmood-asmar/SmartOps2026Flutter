@@ -1,12 +1,13 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:smartops/features/auth/screens/forgetpass.dart';
-import 'package:smartops/features/auth/screens/signup.dart';
-import '../widgets/auth_layout.dart';
-import '../widgets/auth_header.dart';
-import '../widgets/auth_text_field.dart';
+import 'package:smartops/core/validators/auth_validators.dart';
+
 import '../widgets/auth_button.dart';
+import '../widgets/auth_footer.dart';
+import '../widgets/auth_header.dart';
+import '../widgets/auth_layout.dart';
+import '../widgets/auth_text_field.dart';
+import 'forgetpass.dart';
+import 'signup.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -16,10 +17,13 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  bool isPasswordHidden = true;
+  final _formKey = GlobalKey<FormState>();
 
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+
+  bool isPasswordHidden = true;
+  bool isLoading = false;
 
   @override
   void dispose() {
@@ -28,125 +32,120 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _login() {
-    final email = emailController.text.trim();
-    final password = passwordController.text;
-  
-    String? errorMessage;
-    if (email.isEmpty || password.isEmpty) {
-      errorMessage = 'Please fill in all fields.';
-    } else if (!email.contains('@') || !email.contains('.')) {
-      errorMessage = 'Please enter a valid email address.';
-    } else if (password.length < 6) {
-      errorMessage = 'Password must be at least 6 characters.';
-    }
+  Future<void> login() async {
+    if (!_formKey.currentState!.validate()) return;
 
-    if (errorMessage != null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(errorMessage)));
-      return;
-    }
+    setState(() {
+      isLoading = true;
+    });
 
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('Signed in as $email.')));
+    await Future.delayed(const Duration(seconds: 1));
+
+    if (!mounted) return;
+
+    setState(() {
+    isLoading = false;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Login validation successful'),
+      ),
+    );
+
+    // TODO: later navigate to dashboard
   }
 
   @override
   Widget build(BuildContext context) {
     return AuthLayout(
-      child: Column(
-        children: [
-          const AuthHeader(
-            title: 'Welcome back',
-            subtitle: 'Sign in to continue to SmartOps',
-          ),
-
-          const SizedBox(height: 32),
-
-          AuthTextField(
-            label: 'Email',
-            hint: 'Enter your email',
-            controller: emailController,
-            keyboardType: TextInputType.emailAddress,
-            prefixIcon: Icons.email_outlined,
-          ),
-
-          const SizedBox(height: 18),
-
-          AuthTextField(
-            label: 'Password',
-            hint: 'Enter your password',
-            controller: passwordController,
-            obscureText: isPasswordHidden,
-            prefixIcon: Icons.lock_outline,
-            suffixIcon: isPasswordHidden
-                ? Icons.visibility_off_outlined
-                : Icons.visibility_outlined,
-            onSuffixTap: () {
-              setState(() {
-                isPasswordHidden = !isPasswordHidden;
-              });
-            },
-          ),
-
-          const SizedBox(height: 10),
-
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => ForgetPassScreen()),
-                );
-              },
-              child: const Text(
-                'Forgot Password?',
-                style: TextStyle(
-                  color: Color(0xFF0B2E59),
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          children: [
+            const AuthHeader(
+              title: 'Welcome Back',
+              subtitle: 'Access your dashboard.',
             ),
-          ),
 
-          const SizedBox(height: 16),
+            const SizedBox(height: 32),
 
-          AuthButton(
-            text: 'Login',
-            icon: Icons.arrow_forward,
-            onPressed: _login,
-          ),
+            AuthTextField(
+              label: 'Email Address',
+              hint: 'name@company.com',
+              controller: emailController,
+              keyboardType: TextInputType.emailAddress,
+              prefixIcon: Icons.email_outlined,
+              validator: AuthValidators.email,
+            ),
 
-          const SizedBox(height: 24),
+            const SizedBox(height: 18),
 
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                "Don’t have an account?",
-                style: TextStyle(color: Color(0xFF5F6C7B)),
-              ),
-              TextButton(
+            AuthTextField(
+              label: 'Password',
+              hint: 'Enter your password',
+              controller: passwordController,
+              obscureText: isPasswordHidden,
+              prefixIcon: Icons.lock_outline,
+              suffixIcon: isPasswordHidden
+                  ? Icons.visibility_off_outlined
+                  : Icons.visibility_outlined,
+              onSuffixTap: () {
+                setState(() {
+                  isPasswordHidden = !isPasswordHidden;
+                });
+              },
+              validator: AuthValidators.password,
+            ),
+
+            const SizedBox(height: 8),
+
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const SignupScreen()),
+                    MaterialPageRoute(
+                      builder: (_) => ForgetPassScreen(),
+                    ),
                   );
                 },
                 child: const Text(
-                  'Register',
+                  'Forgot?',
                   style: TextStyle(
                     color: Color(0xFF0B2E59),
                     fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
-            ],
-          ),
-        ],
+            ),
+
+            const SizedBox(height: 16),
+
+            AuthButton(
+              text: 'Sign Into Dashboard',
+              icon: Icons.arrow_forward,
+              isLoading: isLoading,
+              onPressed: login,
+            ),
+
+            const SizedBox(height: 24),
+
+            AuthFooter(
+              text: 'New to SmartOps?',
+              actionText: 'Create an account',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const SignupScreen(),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

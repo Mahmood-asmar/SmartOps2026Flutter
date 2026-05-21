@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:smartops/core/validators/auth_validators.dart';
 
 import '../widgets/auth_button.dart';
 import '../widgets/auth_header.dart';
 import '../widgets/auth_layout.dart';
 import '../widgets/auth_text_field.dart';
 import '../widgets/password_rules.dart';
+import 'login.dart';
 
 class ResetPassScreen extends StatefulWidget {
   const ResetPassScreen({super.key});
@@ -14,12 +16,14 @@ class ResetPassScreen extends StatefulWidget {
 }
 
 class _ResetPassScreenState extends State<ResetPassScreen> {
+  final _formKey = GlobalKey<FormState>();
+
   bool isPasswordHidden = true;
   bool isConfirmPasswordHidden = true;
+  bool isLoading = false;
 
-  final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController =
-      TextEditingController();
+  final passwordController = TextEditingController();
+  final confirmPasswordController = TextEditingController();
 
   @override
   void dispose() {
@@ -28,67 +32,86 @@ class _ResetPassScreenState extends State<ResetPassScreen> {
     super.dispose();
   }
 
+  Future<void> resetPassword() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => isLoading = true);
+
+    await Future.delayed(const Duration(seconds: 1));
+
+    if (!mounted) return;
+
+    setState(() => isLoading = false);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Password reset successfully')),
+    );
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (route) => false,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return AuthLayout(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const AuthHeader(
-            title: 'Reset password',
-            subtitle: 'Create a new secure password for your account',
-          ),
-
-          const SizedBox(height: 30),
-
-          AuthTextField(
-            label: 'New Password',
-            hint: 'Enter new password',
-            controller: passwordController,
-            obscureText: isPasswordHidden,
-            prefixIcon: Icons.lock_outline,
-            suffixIcon: isPasswordHidden
-                ? Icons.visibility_off_outlined
-                : Icons.visibility_outlined,
-            onSuffixTap: () {
-              setState(() {
-                isPasswordHidden = !isPasswordHidden;
-              });
-            },
-          ),
-
-          const SizedBox(height: 14),
-
-          const PasswordRules(),
-
-          const SizedBox(height: 18),
-
-          AuthTextField(
-            label: 'Confirm Password',
-            hint: 'Confirm new password',
-            controller: confirmPasswordController,
-            obscureText: isConfirmPasswordHidden,
-            prefixIcon: Icons.lock_outline,
-            suffixIcon: isConfirmPasswordHidden
-                ? Icons.visibility_off_outlined
-                : Icons.visibility_outlined,
-            onSuffixTap: () {
-              setState(() {
-                isConfirmPasswordHidden = !isConfirmPasswordHidden;
-              });
-            },
-          ),
-
-          const SizedBox(height: 28),
-
-          AuthButton(
-            text: 'Reset Password',
-            icon: Icons.check,
-            onPressed: () {
-              Navigator.popUntil(context, (route) => route.isFirst);
-            },
-          ),
-        ],
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const AuthHeader(
+              title: 'Reset Password',
+              subtitle: 'Create a new secure password for your account',
+            ),
+            const SizedBox(height: 30),
+            AuthTextField(
+              label: 'New Password',
+              hint: 'Enter new password',
+              controller: passwordController,
+              obscureText: isPasswordHidden,
+              prefixIcon: Icons.lock_outline,
+              suffixIcon: isPasswordHidden
+                  ? Icons.visibility_off_outlined
+                  : Icons.visibility_outlined,
+              onSuffixTap: () {
+                setState(() => isPasswordHidden = !isPasswordHidden);
+              },
+              validator: AuthValidators.password,
+            ),
+            const SizedBox(height: 14),
+            const PasswordRules(),
+            const SizedBox(height: 18),
+            AuthTextField(
+              label: 'Confirm Password',
+              hint: 'Confirm new password',
+              controller: confirmPasswordController,
+              obscureText: isConfirmPasswordHidden,
+              prefixIcon: Icons.lock_outline,
+              suffixIcon: isConfirmPasswordHidden
+                  ? Icons.visibility_off_outlined
+                  : Icons.visibility_outlined,
+              onSuffixTap: () {
+                setState(() {
+                  isConfirmPasswordHidden = !isConfirmPasswordHidden;
+                });
+              },
+              validator: (value) => AuthValidators.confirmPassword(
+                value,
+                passwordController.text,
+              ),
+            ),
+            const SizedBox(height: 28),
+            AuthButton(
+              text: 'Reset Password',
+              icon: Icons.check,
+              isLoading: isLoading,
+              onPressed: resetPassword,
+            ),
+          ],
+        ),
       ),
     );
   }
