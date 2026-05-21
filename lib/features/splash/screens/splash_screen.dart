@@ -3,7 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:smartops/core/theme/app_colors.dart';
 import 'package:smartops/features/onboarding/screens/main_onboarding_screen.dart';
-
+import 'package:smartops/core/local_storage/local_storage.dart';
+import 'package:smartops/features/auth/screens/login.dart';
 import '../widgets/splash_background_circle.dart';
 import '../widgets/splash_footer.dart';
 import '../widgets/splash_loading_bar.dart';
@@ -19,19 +20,43 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
 
   @override
+  @override
   void initState() {
     super.initState();
 
-    Timer(const Duration(seconds: 3), () {
+    _checkOnboarding();
+  }
+
+  Future<void> _checkOnboarding() async {
+
+    await Future.delayed(const Duration(seconds: 3));
+
+    final bool seen =
+    await LocalStorage.isOnboardingSeen();
+
+    if (!mounted) return;
+
+    if (seen) {
 
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => const MainOnboardingScreen(),
+          builder: (context) => const LoginScreen(),
         ),
       );
 
-    });
+    } else {
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) =>
+          const MainOnboardingScreen(),
+        ),
+      );
+
+    }
+
   }
   @override
   Widget build(BuildContext context) {
@@ -111,7 +136,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
                           const SizedBox(height: 48),
 
-                          ClipRRect(
+                        /*  ClipRRect(
                             borderRadius: BorderRadius.circular(16),
                             child: Container(
                               height: 180,
@@ -122,12 +147,12 @@ class _SplashScreenState extends State<SplashScreen> {
                                   color: Colors.white.withValues(alpha:0.10),
                                 ),
                               ),
-                              child: Image.network(
-                                'https://lh3.googleusercontent.com/aida-public/AB6AXuBsco_XsoQGZ4AjpUBCNENN8AovNcWfXsJM-ZVwN10iaqlGMT4D7KEgS1gEkzip5qs-8reRMiWAHb2x0coTr5TMa2iDWCwDhip1aF_HXRy_IZUN22vkCXleJrHC5k-PYuXNGAhwuP3NW48X0ofd4_-tn4N3yj6A1cSLeJUe9WGhN48pvGVBDqW6JaC6o1ncnCVGh_2ZDz82AzAVECS2MBVRy1UPgE3EFxMqfgyTJYGm-geooGGJZjcuSMe5uo7iNKwibMqW1Lctq0I',
-                                fit: BoxFit.cover,
-                              ),
+                           //   child: Image.network(
+                             //   'https://lh3.googleusercontent.com/aida-public/AB6AXuBsco_XsoQGZ4AjpUBCNENN8AovNcWfXsJM-ZVwN10iaqlGMT4D7KEgS1gEkzip5qs-8reRMiWAHb2x0coTr5TMa2iDWCwDhip1aF_HXRy_IZUN22vkCXleJrHC5k-PYuXNGAhwuP3NW48X0ofd4_-tn4N3yj6A1cSLeJUe9WGhN48pvGVBDqW6JaC6o1ncnCVGh_2ZDz82AzAVECS2MBVRy1UPgE3EFxMqfgyTJYGm-geooGGJZjcuSMe5uo7iNKwibMqW1Lctq0I',
+                              //  fit: BoxFit.cover,
+                             // ),
                             ),
-                          ),
+                         ),*/
                         ],
                       ),
                     ),
