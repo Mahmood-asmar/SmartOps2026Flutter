@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smartops/core/validators/auth_validators.dart';
 
 import '../widgets/auth_button.dart';
 import '../widgets/auth_header.dart';
@@ -14,10 +15,11 @@ class OtpScreen extends StatefulWidget {
 }
 
 class _OtpScreenState extends State<OtpScreen> {
-  final List<TextEditingController> otpControllers = List.generate(
-    4,
-    (_) => TextEditingController(),
-  );
+  final List<TextEditingController> otpControllers =
+      List.generate(4, (_) => TextEditingController());
+
+  bool isLoading = false;
+  String? otpError;
 
   @override
   void dispose() {
@@ -25,6 +27,35 @@ class _OtpScreenState extends State<OtpScreen> {
       controller.dispose();
     }
     super.dispose();
+  }
+
+  String get otpCode {
+    return otpControllers.map((controller) => controller.text).join();
+  }
+
+  Future<void> verifyOtp() async {
+    final error = AuthValidators.otp(otpCode);
+
+    if (error != null) {
+      setState(() => otpError = error);
+      return;
+    }
+
+    setState(() {
+      otpError = null;
+      isLoading = true;
+    });
+
+    await Future.delayed(const Duration(seconds: 1));
+
+    if (!mounted) return;
+
+    setState(() => isLoading = false);
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const ResetPassScreen()),
+    );
   }
 
   @override
@@ -37,35 +68,31 @@ class _OtpScreenState extends State<OtpScreen> {
             title: 'Verify OTP',
             subtitle: 'Enter the 4-digit code sent to your email',
           ),
-
           const SizedBox(height: 36),
-
           OtpInput(controllers: otpControllers),
-
+          if (otpError != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              otpError!,
+              style: const TextStyle(
+                color: Colors.red,
+                fontSize: 12,
+              ),
+            ),
+          ],
           const SizedBox(height: 28),
-
           AuthButton(
             text: 'Verify Code',
             icon: Icons.arrow_forward,
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const ResetPassScreen()),
-              );
-            },
+            isLoading: isLoading,
+            onPressed: verifyOtp,
           ),
-
           const SizedBox(height: 18),
-
           Center(
             child: TextButton(
               onPressed: () {
-                for (final controller in otpControllers) {
-                  controller.clear();
-                }
-                FocusScope.of(context).unfocus();
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Verification code resent.')),
+                  const SnackBar(content: Text('Code resent successfully')),
                 );
               },
               child: const Text(

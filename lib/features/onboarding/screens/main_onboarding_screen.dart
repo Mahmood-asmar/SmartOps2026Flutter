@@ -3,9 +3,8 @@ import 'package:smartops/core/theme/app_colors.dart';
 import 'package:smartops/features/auth/screens/login.dart';
 import 'package:smartops/features/onboarding/widgets/onboarding_dots.dart';
 import 'package:smartops/features/onboarding/widgets/onboarding_page.dart';
-
 import 'package:smartops/core/local_storage/local_storage.dart';
-import 'package:smartops/features/auth/screens/login.dart';
+
 
 class MainOnboardingScreen extends StatefulWidget {
   const MainOnboardingScreen({super.key});
