@@ -56,7 +56,7 @@ class OnboardingPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(32),
                 ),
                 clipBehavior: Clip.antiAlias,
-                child: Image.network(
+                child: Image.asset(
                   imageUrl,
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {

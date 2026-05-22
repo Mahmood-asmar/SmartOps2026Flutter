@@ -3,6 +3,8 @@ import 'package:smartops/core/theme/app_colors.dart';
 import 'package:smartops/features/auth/screens/login.dart';
 import 'package:smartops/features/onboarding/widgets/onboarding_dots.dart';
 import 'package:smartops/features/onboarding/widgets/onboarding_page.dart';
+import 'package:smartops/core/local_storage/local_storage.dart';
+
 
 class MainOnboardingScreen extends StatefulWidget {
   const MainOnboardingScreen({super.key});
@@ -18,37 +20,46 @@ class _MainOnboardingScreenState extends State<MainOnboardingScreen> {
   final List<_OnboardingItem> _items = const [
     _OnboardingItem(
       imageUrl:
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuA66MiwXcz0AI63d8oo4nHftB0NztRhwU7DBcO3WQ1SErIdQNJrA7wx-Hm55LDvb0rWchs_k9pkByise46vGjWpC92-o7IBq0S2tGs3nnZKMaBc8ZeGLOJotBJPnoWVhh5VhhRmvJRgUfvPiDYdMK8bxw5uYOpWdJF6eb-XBFiL8Pxtu04L9wNsRpm8Lfm04QdV4J9ihGlg6c9AohbF5u0nTXkdcSmidy8Esb3ZZuvmbGpGAGLhqsO-Py1hTTcdUYZj3n5y4MkCAq0',
+      'assets/images/on1.png',
       title: 'Manage Projects Efficiently',
       description:
         ' Organize your architectural workflows, set firm deadlines, and manage complex project lifecycles with surgical precision.'
     ),
     _OnboardingItem(
       imageUrl:
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuAz0LOy1HOt2Rc6LTaV4VPhdUex2IZeqdQZAPeiy3X2vPXb9ERvlCS7ydsJRCD7pXpMRBvxQOnWZUuc_XWn_zRnqaOAGDfM0Q46heJVszGVLghmq1o1yI1CLXSJy5mRb4_a_gSqvUWvXY86Ain9m7y-zrFGexaZL6bNOoq6coDdpJn8fVaOsCv6qDuiJKbaFStG7Uf25DXCDb94T2zt5owthx7KA_ZSPbqceoKr2Wux7bxAroPrqnn21KHeN5CxMr9Uoz31wAvMS8A',
+      'assets/images/on2.png',
       title: 'Track Tasks & Progress',
       description:
         'Assign tasks to your team and monitor real-time progress through intuitive boards and productivity charts. Stay ahead of deadlines with precise oversight.'
     ),
     _OnboardingItem(
       imageUrl:
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuA66MiwXcz0AI63d8oo4nHftB0NztRhwU7DBcO3WQ1SErIdQNJrA7wx-Hm55LDvb0rWchs_k9pkByise46vGjWpC92-o7IBq0S2tGs3nnZKMaBc8ZeGLOJotBJPnoWVhh5VhhRmvJRgUfvPiDYdMK8bxw5uYOpWdJF6eb-XBFiL8Pxtu04L9wNsRpm8Lfm04QdV4J9ihGlg6c9AohbF5u0nTXkdcSmidy8Esb3ZZuvmbGpGAGLhqsO-Py1hTTcdUYZj3n5y4MkCAq0',
+      'assets/images/on3.png',
       title: 'Collaborate Securely',
       description:
         '    Connect admins, employees, and clients in a unified, secure ecosystem with real-time notifications and encrypted communication.'
     ),
   ];
 
-  void _nextPage() {
+  Future<void> _nextPage() async {
     if (_currentIndex < _items.length - 1) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 350),
         curve: Curves.easeInOut,
       );
     } else {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context){
-        return LoginScreen();
-      }));
+
+      await LocalStorage.setOnboardingSeen();
+
+      if (!mounted) return;
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const LoginScreen(),
+        ),
+      );
+
     }
   }
 
