@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:smartops/core/validators/auth_validators.dart';
 
-import '../widgets/auth_button.dart';
-import '../widgets/auth_footer.dart';
+
+import 'package:smartops/core/widgets/app_button.dart';
+import 'package:smartops/core/widgets/app_footer.dart';
 import '../widgets/auth_header.dart';
 import '../widgets/auth_layout.dart';
-import '../widgets/auth_text_field.dart';
+import 'package:smartops/core/widgets/app_text_field.dart';
 import 'forgetpass.dart';
 import 'signup.dart';
 
@@ -70,7 +71,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
             const SizedBox(height: 32),
 
-            AuthTextField(
+            AppTextField(
               label: 'Email Address',
               hint: 'name@company.com',
               controller: emailController,
@@ -81,7 +82,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
             const SizedBox(height: 18),
 
-            AuthTextField(
+            AppTextField(
               label: 'Password',
               hint: 'Enter your password',
               controller: passwordController,
@@ -123,7 +124,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
             const SizedBox(height: 16),
 
-            AuthButton(
+            AppButton(
               text: 'Sign Into Dashboard',
               icon: Icons.arrow_forward,
               isLoading: isLoading,
@@ -132,7 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
             const SizedBox(height: 24),
 
-            AuthFooter(
+            AppFooter(
               text: 'New to SmartOps?',
               actionText: 'Create an account',
               onTap: () {

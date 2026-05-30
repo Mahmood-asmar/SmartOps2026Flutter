@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:smartops/core/validators/auth_validators.dart';
 
-import '../widgets/auth_button.dart';
+
+import 'package:smartops/core/widgets/app_button.dart';
 import '../widgets/auth_header.dart';
 import '../widgets/auth_layout.dart';
 import '../widgets/otp_input.dart';
@@ -81,7 +82,7 @@ class _OtpScreenState extends State<OtpScreen> {
             ),
           ],
           const SizedBox(height: 28),
-          AuthButton(
+          AppButton(
             text: 'Verify Code',
             icon: Icons.arrow_forward,
             isLoading: isLoading,
