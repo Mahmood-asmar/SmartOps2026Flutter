@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:smartops/core/provider/auth_provider.dart';
 import 'package:smartops/core/validators/auth_validators.dart';
 
 import '../widgets/auth_button.dart';
@@ -6,7 +8,6 @@ import '../widgets/auth_footer.dart';
 import '../widgets/auth_header.dart';
 import '../widgets/auth_layout.dart';
 import '../widgets/auth_text_field.dart';
-import '../widgets/role_selector.dart';
 import 'login.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -19,10 +20,8 @@ class SignupScreen extends StatefulWidget {
 class _SignupScreenState extends State<SignupScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  String selectedRole = 'Admin';
   bool isPasswordHidden = true;
   bool isConfirmPasswordHidden = true;
-  bool isLoading = false;
 
   final fullNameController = TextEditingController();
   final emailController = TextEditingController();
@@ -38,29 +37,49 @@ class _SignupScreenState extends State<SignupScreen> {
     super.dispose();
   }
 
+  String _cleanErrorMessage(Object error) {
+    return error.toString().replaceFirst('Exception: ', '');
+  }
+
   Future<void> signup() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() => isLoading = true);
+    try {
+      await context.read<AuthProvider>().register(
+        name: fullNameController.text.trim(),
+        email: emailController.text.trim(),
+        password: passwordController.text,
+      );
 
-    await Future.delayed(const Duration(seconds: 1));
+      if (!mounted) return;
 
-    if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Account created successfully. Please login.'),
+          backgroundColor: Colors.green,
+        ),
+      );
 
-    setState(() => isLoading = false);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
+    } catch (error) {
+      if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Signup validation successful')),
-    );
-
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
-    );
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_cleanErrorMessage(error)),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
+
     return AuthLayout(
       child: Form(
         key: _formKey,
@@ -71,7 +90,9 @@ class _SignupScreenState extends State<SignupScreen> {
               title: 'Create Account',
               subtitle: 'Register to start using SmartOps',
             ),
+
             const SizedBox(height: 28),
+
             AuthTextField(
               label: 'Full Name',
               hint: 'Enter your full name',
@@ -79,7 +100,9 @@ class _SignupScreenState extends State<SignupScreen> {
               prefixIcon: Icons.person_outline,
               validator: AuthValidators.fullName,
             ),
+
             const SizedBox(height: 18),
+
             AuthTextField(
               label: 'Email',
               hint: 'Enter your email',
@@ -88,14 +111,9 @@ class _SignupScreenState extends State<SignupScreen> {
               prefixIcon: Icons.email_outlined,
               validator: AuthValidators.email,
             ),
+
             const SizedBox(height: 18),
-            RoleSelector(
-              selectedRole: selectedRole,
-              onChanged: (role) {
-                setState(() => selectedRole = role);
-              },
-            ),
-            const SizedBox(height: 18),
+
             AuthTextField(
               label: 'Password',
               hint: 'Create a password',
@@ -110,7 +128,9 @@ class _SignupScreenState extends State<SignupScreen> {
               },
               validator: AuthValidators.password,
             ),
+
             const SizedBox(height: 18),
+
             AuthTextField(
               label: 'Confirm Password',
               hint: 'Confirm your password',
@@ -130,14 +150,18 @@ class _SignupScreenState extends State<SignupScreen> {
                 passwordController.text,
               ),
             ),
+
             const SizedBox(height: 24),
+
             AuthButton(
               text: 'Create Account',
               icon: Icons.arrow_forward,
-              isLoading: isLoading,
+              isLoading: authProvider.isLoading,
               onPressed: signup,
             ),
+
             const SizedBox(height: 16),
+
             AuthFooter(
               text: 'Already have an account?',
               actionText: 'Login',

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:smartops/core/local_storage/auth_storage.dart';
+import 'package:smartops/core/services/auth_service.dart';
 import 'package:smartops/core/validators/auth_validators.dart';
 
 import '../widgets/auth_button.dart';
@@ -32,26 +34,65 @@ class _ResetPassScreenState extends State<ResetPassScreen> {
     super.dispose();
   }
 
+  String _cleanErrorMessage(Object error) {
+    return error.toString().replaceFirst('Exception: ', '');
+  }
+
   Future<void> resetPassword() async {
     if (!_formKey.currentState!.validate()) return;
 
+    final email = await AuthStorage.getResetEmail();
+
+    if (email == null || email.isEmpty) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Email not found. Please request a new code.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     setState(() => isLoading = true);
 
-    await Future.delayed(const Duration(seconds: 1));
+    try {
+      await AuthService.resetPassword(
+        email: email,
+        newPassword: passwordController.text,
+      );
 
-    if (!mounted) return;
+      await AuthStorage.clearResetEmail();
 
-    setState(() => isLoading = false);
+      if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Password reset successfully')),
-    );
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Password reset successfully'),
+          backgroundColor: Colors.green,
+        ),
+      );
 
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
-      (route) => false,
-    );
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+            (route) => false,
+      );
+    } catch (error) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_cleanErrorMessage(error)),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
+    }
   }
 
   @override
@@ -66,7 +107,9 @@ class _ResetPassScreenState extends State<ResetPassScreen> {
               title: 'Reset Password',
               subtitle: 'Create a new secure password for your account',
             ),
+
             const SizedBox(height: 30),
+
             AuthTextField(
               label: 'New Password',
               hint: 'Enter new password',
@@ -81,9 +124,13 @@ class _ResetPassScreenState extends State<ResetPassScreen> {
               },
               validator: AuthValidators.password,
             ),
+
             const SizedBox(height: 14),
+
             const PasswordRules(),
+
             const SizedBox(height: 18),
+
             AuthTextField(
               label: 'Confirm Password',
               hint: 'Confirm new password',
@@ -103,7 +150,9 @@ class _ResetPassScreenState extends State<ResetPassScreen> {
                 passwordController.text,
               ),
             ),
+
             const SizedBox(height: 28),
+
             AuthButton(
               text: 'Reset Password',
               icon: Icons.check,
