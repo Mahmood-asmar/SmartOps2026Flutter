@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:smartops/core/local_storage/auth_storage.dart';
 import 'package:smartops/core/services/auth_service.dart';
+import 'package:smartops/core/widgets/app_button.dart';
 
-import '../widgets/auth_button.dart';
 import '../widgets/auth_header.dart';
 import '../widgets/auth_layout.dart';
 import '../widgets/otp_input.dart';
@@ -17,7 +17,7 @@ class OtpScreen extends StatefulWidget {
 
 class _OtpScreenState extends State<OtpScreen> {
   final List<TextEditingController> otpControllers =
-  List.generate(6, (_) => TextEditingController());
+      List.generate(6, (_) => TextEditingController());
 
   bool isLoading = false;
   bool isResending = false;
@@ -144,11 +144,8 @@ class _OtpScreenState extends State<OtpScreen> {
             title: 'Verify OTP',
             subtitle: 'Enter the 6-digit code sent to your email',
           ),
-
           const SizedBox(height: 36),
-
           OtpInput(controllers: otpControllers),
-
           if (otpError != null) ...[
             const SizedBox(height: 8),
             Text(
@@ -159,18 +156,14 @@ class _OtpScreenState extends State<OtpScreen> {
               ),
             ),
           ],
-
           const SizedBox(height: 28),
-
-          AuthButton(
+          AppButton(
             text: 'Verify Code',
             icon: Icons.arrow_forward,
             isLoading: isLoading,
             onPressed: isResending ? null : verifyOtp,
           ),
-
           const SizedBox(height: 18),
-
           Center(
             child: TextButton(
               onPressed: isLoading || isResending ? null : resendCode,

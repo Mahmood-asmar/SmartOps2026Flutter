@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smartops/core/provider/auth_provider.dart';
 import 'package:smartops/core/validators/auth_validators.dart';
+import 'package:smartops/core/widgets/app_button.dart';
+import 'package:smartops/core/widgets/app_footer.dart';
+import 'package:smartops/core/widgets/app_text_field.dart';
 
-import '../widgets/auth_button.dart';
-import '../widgets/auth_footer.dart';
 import '../widgets/auth_header.dart';
 import '../widgets/auth_layout.dart';
-import '../widgets/auth_text_field.dart';
 import 'login.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -46,10 +46,10 @@ class _SignupScreenState extends State<SignupScreen> {
 
     try {
       await context.read<AuthProvider>().register(
-        name: fullNameController.text.trim(),
-        email: emailController.text.trim(),
-        password: passwordController.text,
-      );
+            name: fullNameController.text.trim(),
+            email: emailController.text.trim(),
+            password: passwordController.text,
+          );
 
       if (!mounted) return;
 
@@ -90,20 +90,16 @@ class _SignupScreenState extends State<SignupScreen> {
               title: 'Create Account',
               subtitle: 'Register to start using SmartOps',
             ),
-
             const SizedBox(height: 28),
-
-            AuthTextField(
+            AppTextField(
               label: 'Full Name',
               hint: 'Enter your full name',
               controller: fullNameController,
               prefixIcon: Icons.person_outline,
               validator: AuthValidators.fullName,
             ),
-
             const SizedBox(height: 18),
-
-            AuthTextField(
+            AppTextField(
               label: 'Email',
               hint: 'Enter your email',
               controller: emailController,
@@ -111,10 +107,8 @@ class _SignupScreenState extends State<SignupScreen> {
               prefixIcon: Icons.email_outlined,
               validator: AuthValidators.email,
             ),
-
             const SizedBox(height: 18),
-
-            AuthTextField(
+            AppTextField(
               label: 'Password',
               hint: 'Create a password',
               controller: passwordController,
@@ -128,10 +122,8 @@ class _SignupScreenState extends State<SignupScreen> {
               },
               validator: AuthValidators.password,
             ),
-
             const SizedBox(height: 18),
-
-            AuthTextField(
+            AppTextField(
               label: 'Confirm Password',
               hint: 'Confirm your password',
               controller: confirmPasswordController,
@@ -150,19 +142,15 @@ class _SignupScreenState extends State<SignupScreen> {
                 passwordController.text,
               ),
             ),
-
             const SizedBox(height: 24),
-
-            AuthButton(
+            AppButton(
               text: 'Create Account',
               icon: Icons.arrow_forward,
               isLoading: authProvider.isLoading,
               onPressed: signup,
             ),
-
             const SizedBox(height: 16),
-
-            AuthFooter(
+            AppFooter(
               text: 'Already have an account?',
               actionText: 'Login',
               onTap: () {

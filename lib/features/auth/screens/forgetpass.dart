@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:smartops/core/local_storage/auth_storage.dart';
 import 'package:smartops/core/services/auth_service.dart';
 import 'package:smartops/core/validators/auth_validators.dart';
+import 'package:smartops/core/widgets/app_button.dart';
+import 'package:smartops/core/widgets/app_text_field.dart';
 
-import '../widgets/auth_button.dart';
 import '../widgets/auth_header.dart';
 import '../widgets/auth_layout.dart';
-import '../widgets/auth_text_field.dart';
 import 'otp.dart';
 
 class ForgetPassScreen extends StatefulWidget {
@@ -84,10 +84,8 @@ class _ForgetPassScreenState extends State<ForgetPassScreen> {
               title: 'Forgot Password?',
               subtitle: 'Enter your email to receive a verification code',
             ),
-
             const SizedBox(height: 32),
-
-            AuthTextField(
+            AppTextField(
               label: 'Email',
               hint: 'Enter your email',
               controller: emailController,
@@ -95,18 +93,14 @@ class _ForgetPassScreenState extends State<ForgetPassScreen> {
               prefixIcon: Icons.email_outlined,
               validator: AuthValidators.email,
             ),
-
             const SizedBox(height: 28),
-
-            AuthButton(
+            AppButton(
               text: 'Send Code',
               icon: Icons.arrow_forward,
               isLoading: isLoading,
               onPressed: sendCode,
             ),
-
             const SizedBox(height: 16),
-
             Center(
               child: TextButton(
                 onPressed: isLoading ? null : () => Navigator.pop(context),
