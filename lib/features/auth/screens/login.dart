@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:smartops/core/provider/auth_provider.dart';
 import 'package:smartops/core/validators/auth_validators.dart';
 
 
@@ -24,7 +26,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController passwordController = TextEditingController();
 
   bool isPasswordHidden = true;
-  bool isLoading = false;
 
   @override
   void dispose() {
@@ -33,32 +34,50 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  String _cleanErrorMessage(Object error) {
+    return error.toString().replaceFirst('Exception: ', '');
+  }
+
   Future<void> login() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() {
-      isLoading = true;
-    });
+    try {
+      await context.read<AuthProvider>().login(
+        email: emailController.text.trim(),
+        password: passwordController.text,
+      );
 
-    await Future.delayed(const Duration(seconds: 1));
+      if (!mounted) return;
 
-    if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Login successful'),
+          backgroundColor: Colors.green,
+        ),
+      );
 
-    setState(() {
-    isLoading = false;
-    });
+      // TODO: هون بعدين بنوديه على صفحة Dashboard/Home لما تبعتلي اسمها.
+      // مثال:
+      // Navigator.pushReplacement(
+      //   context,
+      //   MaterialPageRoute(builder: (_) => const DashboardScreen()),
+      // );
+    } catch (error) {
+      if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Login validation successful'),
-      ),
-    );
-
-    // TODO: later navigate to dashboard
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_cleanErrorMessage(error)),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
+
     return AuthLayout(
       child: Form(
         key: _formKey,
@@ -104,7 +123,9 @@ class _LoginScreenState extends State<LoginScreen> {
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
-                onPressed: () {
+                onPressed: authProvider.isLoading
+                    ? null
+                    : () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -127,7 +148,7 @@ class _LoginScreenState extends State<LoginScreen> {
             AppButton(
               text: 'Sign Into Dashboard',
               icon: Icons.arrow_forward,
-              isLoading: isLoading,
+              isLoading: authProvider.isLoading,
               onPressed: login,
             ),
 

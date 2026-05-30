@@ -8,9 +8,8 @@ class PasswordRules extends StatelessWidget {
     return const Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _RuleText(text: 'At least 8 characters'),
-        _RuleText(text: 'Includes uppercase and lowercase letters'),
-        _RuleText(text: 'Includes at least one number'),
+        _RuleText(text: 'At least 6 characters'),
+
       ],
     );
   }

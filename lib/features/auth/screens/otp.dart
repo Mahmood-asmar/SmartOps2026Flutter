@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:smartops/core/validators/auth_validators.dart';
-
-
+import 'package:smartops/core/local_storage/auth_storage.dart';
+import 'package:smartops/core/services/auth_service.dart';
 import 'package:smartops/core/widgets/app_button.dart';
+
 import '../widgets/auth_header.dart';
 import '../widgets/auth_layout.dart';
 import '../widgets/otp_input.dart';
@@ -17,9 +17,10 @@ class OtpScreen extends StatefulWidget {
 
 class _OtpScreenState extends State<OtpScreen> {
   final List<TextEditingController> otpControllers =
-      List.generate(4, (_) => TextEditingController());
+      List.generate(6, (_) => TextEditingController());
 
   bool isLoading = false;
+  bool isResending = false;
   String? otpError;
 
   @override
@@ -34,29 +35,103 @@ class _OtpScreenState extends State<OtpScreen> {
     return otpControllers.map((controller) => controller.text).join();
   }
 
-  Future<void> verifyOtp() async {
-    final error = AuthValidators.otp(otpCode);
+  String _cleanErrorMessage(Object error) {
+    return error.toString().replaceFirst('Exception: ', '');
+  }
 
-    if (error != null) {
-      setState(() => otpError = error);
+  Future<void> verifyOtp() async {
+    setState(() => otpError = null);
+
+    final email = await AuthStorage.getResetEmail();
+
+    if (email == null || email.isEmpty) {
+      setState(() {
+        otpError = 'Email not found. Please request a new code.';
+      });
       return;
     }
 
-    setState(() {
-      otpError = null;
-      isLoading = true;
-    });
+    if (otpCode.length != 6) {
+      setState(() {
+        otpError = 'OTP must be 6 digits';
+      });
+      return;
+    }
 
-    await Future.delayed(const Duration(seconds: 1));
+    setState(() => isLoading = true);
 
-    if (!mounted) return;
+    try {
+      await AuthService.verifyOtp(
+        email: email,
+        otp: otpCode,
+      );
 
-    setState(() => isLoading = false);
+      if (!mounted) return;
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const ResetPassScreen()),
-    );
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('OTP verified successfully'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const ResetPassScreen()),
+      );
+    } catch (error) {
+      if (!mounted) return;
+
+      setState(() {
+        otpError = _cleanErrorMessage(error);
+      });
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
+    }
+  }
+
+  Future<void> resendCode() async {
+    setState(() => otpError = null);
+
+    final email = await AuthStorage.getResetEmail();
+
+    if (email == null || email.isEmpty) {
+      setState(() {
+        otpError = 'Email not found. Please request a new code.';
+      });
+      return;
+    }
+
+    setState(() => isResending = true);
+
+    try {
+      await AuthService.forgotPassword(email: email);
+
+      for (final controller in otpControllers) {
+        controller.clear();
+      }
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('OTP resent successfully'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (error) {
+      if (!mounted) return;
+
+      setState(() {
+        otpError = _cleanErrorMessage(error);
+      });
+    } finally {
+      if (mounted) {
+        setState(() => isResending = false);
+      }
+    }
   }
 
   @override
@@ -67,7 +142,7 @@ class _OtpScreenState extends State<OtpScreen> {
         children: [
           const AuthHeader(
             title: 'Verify OTP',
-            subtitle: 'Enter the 4-digit code sent to your email',
+            subtitle: 'Enter the 6-digit code sent to your email',
           ),
           const SizedBox(height: 36),
           OtpInput(controllers: otpControllers),
@@ -86,19 +161,15 @@ class _OtpScreenState extends State<OtpScreen> {
             text: 'Verify Code',
             icon: Icons.arrow_forward,
             isLoading: isLoading,
-            onPressed: verifyOtp,
+            onPressed: isResending ? null : verifyOtp,
           ),
           const SizedBox(height: 18),
           Center(
             child: TextButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Code resent successfully')),
-                );
-              },
-              child: const Text(
-                'Resend Code',
-                style: TextStyle(
+              onPressed: isLoading || isResending ? null : resendCode,
+              child: Text(
+                isResending ? 'Resending...' : 'Resend Code',
+                style: const TextStyle(
                   color: Color(0xFF0B2E59),
                   fontWeight: FontWeight.w700,
                 ),
