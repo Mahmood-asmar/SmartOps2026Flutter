@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:smartops/core/validators/auth_validators.dart';
 
-import '../widgets/auth_button.dart';
-import '../widgets/auth_footer.dart';
+
+import 'package:smartops/core/widgets/app_button.dart';
+import 'package:smartops/core/widgets/app_footer.dart';
 import '../widgets/auth_header.dart';
 import '../widgets/auth_layout.dart';
-import '../widgets/auth_text_field.dart';
+import 'package:smartops/core/widgets/app_text_field.dart';
 import '../widgets/role_selector.dart';
 import 'login.dart';
 
@@ -72,7 +73,7 @@ class _SignupScreenState extends State<SignupScreen> {
               subtitle: 'Register to start using SmartOps',
             ),
             const SizedBox(height: 28),
-            AuthTextField(
+            AppTextField(
               label: 'Full Name',
               hint: 'Enter your full name',
               controller: fullNameController,
@@ -80,7 +81,7 @@ class _SignupScreenState extends State<SignupScreen> {
               validator: AuthValidators.fullName,
             ),
             const SizedBox(height: 18),
-            AuthTextField(
+            AppTextField(
               label: 'Email',
               hint: 'Enter your email',
               controller: emailController,
@@ -96,7 +97,7 @@ class _SignupScreenState extends State<SignupScreen> {
               },
             ),
             const SizedBox(height: 18),
-            AuthTextField(
+            AppTextField(
               label: 'Password',
               hint: 'Create a password',
               controller: passwordController,
@@ -111,7 +112,7 @@ class _SignupScreenState extends State<SignupScreen> {
               validator: AuthValidators.password,
             ),
             const SizedBox(height: 18),
-            AuthTextField(
+            AppTextField(
               label: 'Confirm Password',
               hint: 'Confirm your password',
               controller: confirmPasswordController,
@@ -131,14 +132,14 @@ class _SignupScreenState extends State<SignupScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            AuthButton(
+            AppButton(
               text: 'Create Account',
               icon: Icons.arrow_forward,
               isLoading: isLoading,
               onPressed: signup,
             ),
             const SizedBox(height: 16),
-            AuthFooter(
+            AppFooter(
               text: 'Already have an account?',
               actionText: 'Login',
               onTap: () {

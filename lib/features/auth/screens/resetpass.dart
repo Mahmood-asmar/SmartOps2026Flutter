@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:smartops/core/validators/auth_validators.dart';
 
-import '../widgets/auth_button.dart';
+
+import 'package:smartops/core/widgets/app_button.dart';
 import '../widgets/auth_header.dart';
 import '../widgets/auth_layout.dart';
-import '../widgets/auth_text_field.dart';
+import 'package:smartops/core/widgets/app_text_field.dart';
 import '../widgets/password_rules.dart';
 import 'login.dart';
 
@@ -67,7 +68,7 @@ class _ResetPassScreenState extends State<ResetPassScreen> {
               subtitle: 'Create a new secure password for your account',
             ),
             const SizedBox(height: 30),
-            AuthTextField(
+            AppTextField(
               label: 'New Password',
               hint: 'Enter new password',
               controller: passwordController,
@@ -84,7 +85,7 @@ class _ResetPassScreenState extends State<ResetPassScreen> {
             const SizedBox(height: 14),
             const PasswordRules(),
             const SizedBox(height: 18),
-            AuthTextField(
+            AppTextField(
               label: 'Confirm Password',
               hint: 'Confirm new password',
               controller: confirmPasswordController,
@@ -104,7 +105,7 @@ class _ResetPassScreenState extends State<ResetPassScreen> {
               ),
             ),
             const SizedBox(height: 28),
-            AuthButton(
+            AppButton(
               text: 'Reset Password',
               icon: Icons.check,
               isLoading: isLoading,
