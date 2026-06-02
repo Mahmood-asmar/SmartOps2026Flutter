@@ -121,9 +121,9 @@ class ProjectsScreen extends StatelessWidget {
                     progressColor: Colors.green.shade700,
                   ),
                   AppFooter(
-                    text: '@2026 SmartOps Architectural  Systems',
-                    actionText: 'Contact Us',
-                    onTap: () {},
+                   text: 'Need help?',
+                   actionText: 'Contact Support',
+                   onTap: () {},
                   ),
                 ],
               ),

@@ -173,9 +173,9 @@ class _TasksScreenState extends State<TasksScreen> {
                   const SizedBox(height: 28),
 
                   AppFooter(
-                    text: '@2026 SmartOps Architectural  Systems',
-                    actionText: 'Contact Us',
-                    onTap: () {},
+                   text: 'Need help?',
+                   actionText: 'Contact Support',
+                   onTap: () {},
                   ),
                 ],
               ),
