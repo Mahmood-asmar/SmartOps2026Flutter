@@ -7,6 +7,9 @@ import 'package:smartops/features/tasks/widgets/filter_checkbox.dart';
 import 'package:smartops/features/tasks/widgets/productivity_card.dart';
 import 'package:smartops/features/tasks/widgets/task_card.dart';
 import 'package:smartops/features/tasks/widgets/team_activity.dart';
+import 'package:smartops/features/tasks/widgets/assign_task_sheet.dart';
+import 'package:smartops/features/tasks/widgets/export_report_sheet.dart';
+import 'package:smartops/features/tasks/screens/task_details_screen.dart';
 
 class TasksScreen extends StatefulWidget {
   const TasksScreen({super.key});
@@ -23,6 +26,23 @@ class _TasksScreenState extends State<TasksScreen> {
   void _openDrawer(BuildContext context) {
     Scaffold.of(context).openDrawer();
   }
+  void _showAssignTaskSheet(BuildContext context) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (_) => const AssignTaskSheet(),
+  );
+}
+
+void _showExportReportSheet(BuildContext context) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (_) => const ExportReportSheet(),
+  );
+}
 
   @override
   Widget build(BuildContext context) {
@@ -76,7 +96,7 @@ class _TasksScreenState extends State<TasksScreen> {
                             Expanded(
                               child: AppButton(
                                 text: 'Assign Task',
-                                onPressed: () {},
+                                onPressed: () => _showAssignTaskSheet(context) ,
                               ),
                             ),
                             const SizedBox(width: 10),
@@ -84,7 +104,7 @@ class _TasksScreenState extends State<TasksScreen> {
                               child: AppButton(
                                 text: 'Export Report',
                                 backgroundColor: const Color.fromARGB(255, 145, 144, 144),
-                                onPressed: () {},
+                                onPressed: () => _showExportReportSheet(context),
                               ),
                             ),
                           ],
@@ -146,29 +166,86 @@ class _TasksScreenState extends State<TasksScreen> {
 
                   const SizedBox(height: 22),
 
-                  const TaskCard(
-                    title: 'Review architectural load-bearing calculations',
-                    project: 'Neo-Brutalist Plaza',
-                    status: 'In Progress',
-                    statusColor: Colors.orange,
-                    priority: 'Critical',
+                  TaskCard(
+                     title: 'Review architectural load-bearing calculations',
+                      project: 'Neo-Brutalist Plaza',
+                       status: 'In Progress',
+                      statusColor: Colors.orange,
+                      priority: 'Critical',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const TaskDetailsScreen(
+                              title: 'Review architectural load-bearing calculations',
+                              project: 'Neo-Brutalist Plaza',
+                              status: 'In Progress',
+                              statusColor: Colors.orange,
+                              priority: 'Critical',
+                              priorityColor: Colors.red,
+                              assignedUser: 'Jordan Smith',
+                              deadline: 'Dec 20, 2026',
+                              description:
+                                  'Review architectural load-bearing calculations and verify compliance with structural requirements before final approval.',
+                            ),
+                          ),
+                        );
+                      },
                   ),
 
-                  const TaskCard(
-                    title: 'Finalize structural assessment process',
-                    project: 'SmartOps HQ',
-                    status: 'Review',
-                    statusColor: Colors.green,
-                    priority: 'High',
-                  ),
+                  TaskCard(
+                      title: 'Finalize structural assessment process',
+                      project: 'SmartOps HQ',
+                      status: 'Review',
+                      statusColor: Colors.green,
+                      priority: 'High',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const TaskDetailsScreen(
+                              title: 'Finalize structural assessment process',
+                              project: 'SmartOps HQ',
+                              status: 'Review',
+                              statusColor: Colors.green,
+                              priority: 'High',
+                              priorityColor: Colors.red,
+                              assignedUser: 'Sarah Johnson',
+                              deadline: 'Jan 10, 2027',
+                              description:
+                                  'Finalize the structural assessment report and submit all findings for management review.',
+                            ),
+                          ),
+                        );
+                      },
+                    ),
 
-                  const TaskCard(
-                    title: 'Draft elevator scheduling revisions',
-                    project: 'Crescent Tower',
-                    status: 'Complete',
-                    statusColor: Colors.blue,
-                    priority: 'Medium',
-                  ),
+                    TaskCard(
+                      title: 'Draft elevator scheduling revisions',
+                      project: 'Crescent Tower',
+                      status: 'Complete',
+                      statusColor: Colors.blue,
+                      priority: 'Medium',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const TaskDetailsScreen(
+                            title: 'Draft elevator scheduling revisions',
+                              project: 'Crescent Tower',
+                              status: 'Complete',
+                              statusColor: Colors.blue,
+                              priority: 'Medium',
+                              priorityColor: Colors.orange,
+                              assignedUser: 'Michael Brown',
+                              deadline: 'Feb 01, 2027',
+                              description:
+                                  'Prepare updated elevator scheduling plans and optimize traffic flow during peak hours.',
+                            ),
+                         ),
+                        );
+                      },
+                    ),
 
                   const SizedBox(height: 28),
 
