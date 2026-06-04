@@ -11,6 +11,7 @@ import '../widgets/auth_layout.dart';
 import 'package:smartops/core/widgets/app_text_field.dart';
 import 'forgetpass.dart';
 import 'signup.dart';
+import 'package:smartops/features//dashboard/screens/dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -58,10 +59,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
       // TODO: هون بعدين بنوديه على صفحة Dashboard/Home لما تبعتلي اسمها.
       // مثال:
-      // Navigator.pushReplacement(
-      //   context,
-      //   MaterialPageRoute(builder: (_) => const DashboardScreen()),
-      // );
+       Navigator.pushReplacement(
+         context,
+         MaterialPageRoute(builder: (_) => const  DashboardScreen()),
+       );
     } catch (error) {
       if (!mounted) return;
 
