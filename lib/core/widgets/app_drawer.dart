@@ -3,6 +3,9 @@ import 'package:smartops/core/widgets/app_button.dart';
 import 'package:smartops/features/dashboard/screens/dashboard_screen.dart';
 import 'package:smartops/features/projects/screens/projects_screen.dart';
 import 'package:smartops/features/tasks/screens/tasks_screen.dart';
+import 'package:smartops/features/requests/screens/requests_screen.dart';
+import 'package:smartops/features/templates/screens/templates_screen.dart';
+import 'package:smartops/features/notifications/screens/notifications_screen.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class AppDrawer extends StatelessWidget {
@@ -41,15 +44,17 @@ class AppDrawer extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Padding(
-                       padding: const EdgeInsets.all(4),
-                       child: SvgPicture.asset(
-                       'assets/icons/compass.svg',
-                       colorFilter: const ColorFilter.mode(
-                        Colors.white,
+                      padding: const EdgeInsets.all(7),
+                      child: SvgPicture.asset(
+                        'assets/icons/compass.svg',
+                        width: 18,
+                        height: 18,
+                        colorFilter: const ColorFilter.mode(
+                          Colors.white,
                           BlendMode.srcIn,
                         ),
-                       ),
-                     ),
+                      ),
+                    ),
                   ),
                   const SizedBox(width: 10),
                   const Text(
@@ -90,21 +95,24 @@ class AppDrawer extends StatelessWidget {
                 title: 'Requests',
                 icon: Icons.assignment_outlined,
                 isActive: activePage == 'requests',
-                onTap: () {},
+                onTap: () => _navigate(context, const RequestsScreen()),
               ),
 
               _DrawerItem(
-                title: 'Templates',
-                icon: Icons.view_module_outlined,
-                isActive: activePage == 'templates',
-                onTap: () {},
+                 title: 'Templates',
+                 icon: Icons.view_module_outlined,
+                 isActive: activePage == 'templates',
+                 onTap: () => _navigate(
+                   context,
+                   const TemplatesScreen(isClient: true),
+                ),
               ),
 
               _DrawerItem(
                 title: 'Notifications',
                 icon: Icons.notifications_none,
                 isActive: activePage == 'notifications',
-                onTap: () {},
+                onTap: () => _navigate(context, const NotificationsScreen()),
               ),
 
               const Spacer(),

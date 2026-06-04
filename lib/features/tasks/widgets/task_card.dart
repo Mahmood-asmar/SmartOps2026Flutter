@@ -7,6 +7,7 @@ class TaskCard extends StatelessWidget {
   final String status;
   final Color statusColor;
   final String priority;
+  final VoidCallback onTap;
 
   const TaskCard({
     super.key,
@@ -15,65 +16,70 @@ class TaskCard extends StatelessWidget {
     required this.status,
     required this.statusColor,
     required this.priority,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              color: Color(0xFF0B2E59),
-              fontWeight: FontWeight.w900,
-              fontSize: 14,
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(18),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 14),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                color: Color(0xFF0B2E59),
+                fontWeight: FontWeight.w900,
+                fontSize: 14,
+              ),
             ),
-          ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              const Text(
-                'PROJECT',
-                style: TextStyle(
-                  color: Color(0xFF98A2B3),
-                  fontSize: 10,
-                  fontWeight: FontWeight.w800,
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                const Text(
+                  'PROJECT',
+                  style: TextStyle(
+                    color: Color(0xFF98A2B3),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
-              ),
-              const Spacer(),
-              Text(
-                project,
-                style: const TextStyle(
-                  color: Color(0xFF0B2E59),
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
+                const Spacer(),
+                Text(
+                  project,
+                  style: const TextStyle(
+                    color: Color(0xFF0B2E59),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              StatusChip(
-                label: priority,
-                color: Colors.red.shade700,
-              ),
-              const Spacer(),
-              StatusChip(
-                label: status,
-                color: statusColor,
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                StatusChip(
+                  label: priority,
+                  color: Colors.red.shade700,
+                ),
+                const Spacer(),
+                StatusChip(
+                  label: status,
+                  color: statusColor,
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

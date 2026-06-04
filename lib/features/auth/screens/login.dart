@@ -2,16 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smartops/core/provider/auth_provider.dart';
 import 'package:smartops/core/validators/auth_validators.dart';
-
-
 import 'package:smartops/core/widgets/app_button.dart';
 import 'package:smartops/core/widgets/app_footer.dart';
+import 'package:smartops/core/widgets/app_text_field.dart';
+import 'package:smartops/features/dashboard/screens/dashboard_screen.dart';
+
 import '../widgets/auth_header.dart';
 import '../widgets/auth_layout.dart';
-import 'package:smartops/core/widgets/app_text_field.dart';
 import 'forgetpass.dart';
 import 'signup.dart';
-import 'package:smartops/features//dashboard/screens/dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -57,12 +56,10 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       );
 
-      // TODO: هون بعدين بنوديه على صفحة Dashboard/Home لما تبعتلي اسمها.
-      // مثال:
-       Navigator.pushReplacement(
-         context,
-         MaterialPageRoute(builder: (_) => const  DashboardScreen()),
-       );
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const DashboardScreen()),
+      );
     } catch (error) {
       if (!mounted) return;
 
@@ -88,9 +85,7 @@ class _LoginScreenState extends State<LoginScreen> {
               title: 'Welcome Back',
               subtitle: 'Access your dashboard.',
             ),
-
             const SizedBox(height: 32),
-
             AppTextField(
               label: 'Email Address',
               hint: 'name@company.com',
@@ -99,9 +94,7 @@ class _LoginScreenState extends State<LoginScreen> {
               prefixIcon: Icons.email_outlined,
               validator: AuthValidators.email,
             ),
-
             const SizedBox(height: 18),
-
             AppTextField(
               label: 'Password',
               hint: 'Enter your password',
@@ -118,9 +111,7 @@ class _LoginScreenState extends State<LoginScreen> {
               },
               validator: AuthValidators.password,
             ),
-
             const SizedBox(height: 8),
-
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
@@ -130,7 +121,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => ForgetPassScreen(),
+                      builder: (_) => const ForgetPassScreen(),
                     ),
                   );
                 },
@@ -143,18 +134,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
             ),
-
             const SizedBox(height: 16),
-
             AppButton(
               text: 'Sign Into Dashboard',
               icon: Icons.arrow_forward,
               isLoading: authProvider.isLoading,
               onPressed: login,
             ),
-
             const SizedBox(height: 24),
-
             AppFooter(
               text: 'New to SmartOps?',
               actionText: 'Create an account',
