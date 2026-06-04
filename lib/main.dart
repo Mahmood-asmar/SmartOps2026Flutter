@@ -4,6 +4,7 @@ import 'package:smartops/core/provider/auth_provider.dart';
 import 'package:smartops/core/services/api_service.dart';
 import 'package:smartops/features/splash/screens/splash_screen.dart';
 
+
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
 

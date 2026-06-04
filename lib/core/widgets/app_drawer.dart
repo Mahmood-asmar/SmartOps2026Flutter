@@ -44,15 +44,17 @@ class AppDrawer extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Padding(
-                       padding: const EdgeInsets.all(4),
-                       child: SvgPicture.asset(
-                       'assets/icons/compass.svg',
-                       colorFilter: const ColorFilter.mode(
-                        Colors.white,
+                      padding: const EdgeInsets.all(7),
+                      child: SvgPicture.asset(
+                        'assets/icons/compass.svg',
+                        width: 18,
+                        height: 18,
+                        colorFilter: const ColorFilter.mode(
+                          Colors.white,
                           BlendMode.srcIn,
                         ),
-                       ),
-                     ),
+                      ),
+                    ),
                   ),
                   const SizedBox(width: 10),
                   const Text(
