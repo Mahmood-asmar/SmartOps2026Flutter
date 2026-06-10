@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:smartops/core/models/ai_analysis_model.dart';
 import 'package:smartops/core/services/api_service.dart';
 
 class ProjectService {
@@ -40,6 +41,59 @@ class ProjectService {
       }
 
       return {};
+    } on DioException catch (error) {
+      throw _handleDioError(error);
+    }
+  }
+
+  static Future<AiAnalysisModel> getLatestProjectAiAnalysis(
+      int projectId,
+      ) async {
+    try {
+      final response = await ApiService.dio.get(
+        '/ai-analysis/project/$projectId',
+      );
+
+      final data = response.data;
+
+      if (data is Map<String, dynamic>) {
+        final analysisData = data['analysis'];
+
+        if (analysisData is Map<String, dynamic>) {
+          return AiAnalysisModel.fromJson(analysisData);
+        }
+
+        return AiAnalysisModel.fromJson(data);
+      }
+
+      throw Exception('Invalid AI analysis response.');
+    } on DioException catch (error) {
+      throw _handleDioError(error);
+    }
+  }
+
+  static Future<AiAnalysisModel> generateProjectAiAnalysis(
+      int projectId,
+      ) async {
+    try {
+      final response = await ApiService.dio.post(
+        '/ai-analysis/project/$projectId',
+        data: {},
+      );
+
+      final data = response.data;
+
+      if (data is Map<String, dynamic>) {
+        final analysisData = data['analysis'];
+
+        if (analysisData is Map<String, dynamic>) {
+          return AiAnalysisModel.fromJson(analysisData);
+        }
+
+        return AiAnalysisModel.fromJson(data);
+      }
+
+      throw Exception('Invalid AI analysis response.');
     } on DioException catch (error) {
       throw _handleDioError(error);
     }

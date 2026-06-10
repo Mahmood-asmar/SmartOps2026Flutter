@@ -11,7 +11,14 @@ import 'package:smartops/core/widgets/searchable_picker_field.dart';
 import 'package:smartops/core/widgets/status_chip.dart';
 
 class AssignTaskSheet extends StatefulWidget {
-  const AssignTaskSheet({super.key});
+  final int? initialProjectId;
+  final String? initialProjectName;
+
+  const AssignTaskSheet({
+    super.key,
+    this.initialProjectId,
+    this.initialProjectName,
+  });
 
   @override
   State<AssignTaskSheet> createState() => _AssignTaskSheetState();
@@ -35,6 +42,8 @@ class _AssignTaskSheetState extends State<AssignTaskSheet> {
   bool isLoading = true;
   bool isSubmitting = false;
   String errorMessage = '';
+
+  bool get isProjectLocked => widget.initialProjectId != null;
 
   @override
   void initState() {
@@ -89,6 +98,18 @@ class _AssignTaskSheetState extends State<AssignTaskSheet> {
       )
           .toList();
 
+      ProjectModel? initialProject;
+
+      if (widget.initialProjectId != null) {
+        final matches = loadedProjects.where(
+              (project) => project.projectId == widget.initialProjectId,
+        );
+
+        if (matches.isNotEmpty) {
+          initialProject = matches.first;
+        }
+      }
+
       setState(() {
         employees = loadedUsers;
         projects = loadedProjects;
@@ -97,7 +118,9 @@ class _AssignTaskSheetState extends State<AssignTaskSheet> {
           selectedEmployee = employees.first;
         }
 
-        if (projects.isNotEmpty) {
+        if (initialProject != null) {
+          selectedProject = initialProject;
+        } else if (projects.isNotEmpty) {
           selectedProject = projects.first;
         }
       });
@@ -252,6 +275,81 @@ class _AssignTaskSheetState extends State<AssignTaskSheet> {
     );
   }
 
+  Widget _buildLockedProjectField() {
+    final projectName =
+        selectedProject?.name ?? widget.initialProjectName ?? 'Selected Project';
+
+    final projectCategory = selectedProject?.category;
+    final projectStatus = selectedProject?.status;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE8EBEF),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFD0D5DD)),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.folder_copy_outlined,
+            color: Color(0xFF667085),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'PROJECT',
+                  style: TextStyle(
+                    color: Color(0xFF98A2B3),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  projectName,
+                  style: const TextStyle(
+                    color: Color(0xFF0B2E59),
+                    fontWeight: FontWeight.w900,
+                    fontSize: 14,
+                  ),
+                ),
+                if (projectCategory != null || projectStatus != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    [
+                      if (projectCategory != null &&
+                          projectCategory.trim().isNotEmpty)
+                        projectCategory,
+                      if (projectStatus != null && projectStatus.trim().isNotEmpty)
+                        projectStatus.replaceAll('_', ' '),
+                    ].join(' • '),
+                    style: const TextStyle(
+                      color: Color(0xFF667085),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          const Icon(
+            Icons.lock_outline,
+            color: Color(0xFF98A2B3),
+            size: 19,
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return _SheetContainer(
@@ -264,9 +362,13 @@ class _AssignTaskSheetState extends State<AssignTaskSheet> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const _SheetHeader(
-              title: 'Assign New Task',
-              subtitle: 'Create a project task for an employee.',
+            _SheetHeader(
+              title: isProjectLocked
+                  ? 'Assign Task To Project'
+                  : 'Assign New Task',
+              subtitle: isProjectLocked
+                  ? 'Create a task for this selected project.'
+                  : 'Create a project task for an employee.',
             ),
 
             const SizedBox(height: 20),
@@ -301,15 +403,18 @@ class _AssignTaskSheetState extends State<AssignTaskSheet> {
 
             const SizedBox(height: 14),
 
-            _ProjectDropdown(
-              projects: projects,
-              selectedProject: selectedProject,
-              onChanged: (value) {
-                setState(() {
-                  selectedProject = value;
-                });
-              },
-            ),
+            if (isProjectLocked)
+              _buildLockedProjectField()
+            else
+              _ProjectDropdown(
+                projects: projects,
+                selectedProject: selectedProject,
+                onChanged: (value) {
+                  setState(() {
+                    selectedProject = value;
+                  });
+                },
+              ),
 
             const SizedBox(height: 14),
 
@@ -405,7 +510,9 @@ class _AssignTaskSheetState extends State<AssignTaskSheet> {
             const SizedBox(height: 22),
 
             AppButton(
-              text: 'Assign Task',
+              text: isProjectLocked
+                  ? 'Assign To This Project'
+                  : 'Assign Task',
               icon: Icons.check,
               isLoading: isSubmitting,
               onPressed: _submit,

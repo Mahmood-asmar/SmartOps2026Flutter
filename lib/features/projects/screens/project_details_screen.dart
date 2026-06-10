@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:smartops/core/models/ai_analysis_model.dart';
 import 'package:smartops/core/models/project_model.dart';
 import 'package:smartops/core/models/task_model.dart';
 import 'package:smartops/core/provider/auth_provider.dart';
@@ -10,7 +11,9 @@ import 'package:smartops/core/widgets/app_drawer.dart';
 import 'package:smartops/core/widgets/app_top_bar.dart';
 import 'package:smartops/core/widgets/status_chip.dart';
 import 'package:smartops/features/projects/widgets/active_task_card.dart';
+import 'package:smartops/features/projects/widgets/ai_analysis_card.dart';
 import 'package:smartops/features/projects/widgets/progress_card.dart';
+import 'package:smartops/features/tasks/widgets/assign_task_sheet.dart';
 
 class ProjectDetailsScreen extends StatefulWidget {
   final int projectId;
@@ -30,6 +33,11 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
   ProjectModel? project;
   List<TaskModel> projectTasks = [];
 
+  AiAnalysisModel? aiAnalysis;
+  bool isLoadingAiAnalysis = false;
+  bool isGeneratingAiAnalysis = false;
+  String aiAnalysisError = '';
+
   bool isLoading = true;
   String errorMessage = '';
   bool isUpdating = false;
@@ -43,10 +51,34 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
     }
 
     loadProjectDetails();
+    loadAiAnalysis();
   }
 
   void _openDrawer(BuildContext context) {
     Scaffold.of(context).openDrawer();
+  }
+
+  Future<void> _openAssignTaskSheet() async {
+    if (project == null) return;
+
+    final created = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) {
+        return AssignTaskSheet(
+          initialProjectId: project!.projectId,
+          initialProjectName: project!.name,
+        );
+      },
+    );
+
+    if (!mounted) return;
+
+    if (created == true) {
+      await loadProjectDetails();
+      await loadAiAnalysis();
+    }
   }
 
   String _cleanErrorMessage(Object error) {
@@ -107,6 +139,91 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
     }
   }
 
+  Future<void> loadAiAnalysis() async {
+    setState(() {
+      isLoadingAiAnalysis = true;
+      aiAnalysisError = '';
+    });
+
+    try {
+      final loadedAnalysis = await ProjectService.getLatestProjectAiAnalysis(
+        widget.projectId,
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        aiAnalysis = loadedAnalysis;
+      });
+    } catch (error) {
+      if (!mounted) return;
+
+      final message = _cleanErrorMessage(error);
+
+      setState(() {
+        if (message.toLowerCase().contains('not found') ||
+            message.toLowerCase().contains('no ai analysis')) {
+          aiAnalysis = null;
+        } else {
+          aiAnalysisError = message;
+        }
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoadingAiAnalysis = false;
+        });
+      }
+    }
+  }
+
+  Future<void> generateAiAnalysis() async {
+    setState(() {
+      isGeneratingAiAnalysis = true;
+      aiAnalysisError = '';
+    });
+
+    try {
+      final generatedAnalysis = await ProjectService.generateProjectAiAnalysis(
+        widget.projectId,
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        aiAnalysis = generatedAnalysis;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('AI analysis generated successfully.'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (error) {
+      if (!mounted) return;
+
+      final message = _cleanErrorMessage(error);
+
+      setState(() {
+        aiAnalysisError = message;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          isGeneratingAiAnalysis = false;
+        });
+      }
+    }
+  }
+
   double get completionRate {
     if (projectTasks.isEmpty) return 0;
 
@@ -141,8 +258,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
         .map((word) {
       if (word.isEmpty) return word;
       return '${word[0].toUpperCase()}${word.substring(1)}';
-    })
-        .join(' ');
+    }).join(' ');
   }
 
   String _formatDate(String? value) {
@@ -212,6 +328,14 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
     if (item.status == 'in_progress') return 0.65;
     if (item.status == 'cancelled') return 0.15;
     return 0.3;
+  }
+
+  bool _canAddTask(ProjectModel item) {
+    final authProvider = context.read<AuthProvider>();
+
+    return authProvider.isAdmin &&
+        item.status != 'completed' &&
+        item.status != 'cancelled';
   }
 
   Widget _buildLoading() {
@@ -562,7 +686,10 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
         child: Builder(
           builder: (context) {
             return RefreshIndicator(
-              onRefresh: loadProjectDetails,
+              onRefresh: () async {
+                await loadProjectDetails();
+                await loadAiAnalysis();
+              },
               color: const Color(0xFF0B2E59),
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -599,6 +726,14 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
                                 : _timelineProgress(item),
                             color: Colors.blue.shade700,
                           ),
+                          AiAnalysisCard(
+                            analysis: aiAnalysis,
+                            isLoading: isLoadingAiAnalysis,
+                            isGenerating: isGeneratingAiAnalysis,
+                            errorMessage: aiAnalysisError,
+                            onGenerate: generateAiAnalysis,
+                            onRefresh: loadAiAnalysis,
+                          ),
                           _buildPriorityStatus(item),
                           const SizedBox(height: 14),
                           _buildAdminControls(item),
@@ -611,13 +746,36 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
                           ),
                           if (canViewTasks) ...[
                             const SizedBox(height: 8),
-                            const Text(
-                              'Active Tasks',
-                              style: TextStyle(
-                                color: Color(0xFF0B2E59),
-                                fontSize: 17,
-                                fontWeight: FontWeight.w900,
-                              ),
+                            Row(
+                              children: [
+                                const Expanded(
+                                  child: Text(
+                                    'Active Tasks',
+                                    style: TextStyle(
+                                      color: Color(0xFF0B2E59),
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                ),
+                                if (_canAddTask(item))
+                                  TextButton.icon(
+                                    onPressed: _openAssignTaskSheet,
+                                    icon: const Icon(
+                                      Icons.add_task_outlined,
+                                      size: 18,
+                                    ),
+                                    label: const Text(
+                                      'Add Task',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                    ),
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: const Color(0xFF0B2E59),
+                                    ),
+                                  ),
+                              ],
                             ),
                             const SizedBox(height: 12),
                             _buildTasks(),
