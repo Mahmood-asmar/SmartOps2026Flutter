@@ -25,13 +25,12 @@ class AuthValidators {
       return 'Password is required';
     }
 
-    if (value.length < 6) {
-      return 'Password must be at least 6 characters';
+    if (value.length < 8) {
+      return 'Password must be at least 8 characters';
     }
 
-
-    if (!RegExp(r'[0-9]').hasMatch(value)) {
-      return 'Password must contain a number';
+    if (value.length > 100) {
+      return 'Password must be less than 100 characters';
     }
 
     return null;
@@ -50,22 +49,20 @@ class AuthValidators {
   }
 
   static String? fullName(String? value) {
-  if (value == null || value.trim().isEmpty) {
-    return 'Full name is required';
+    if (value == null || value.trim().isEmpty) {
+      return 'Full name is required';
+    }
+
+    if (value.trim().length < 2) {
+      return 'Full name must be at least 2 characters';
+    }
+
+    if (value.trim().length > 100) {
+      return 'Full name must be less than 100 characters';
+    }
+
+    return null;
   }
-
-  if (value.trim().length < 3) {
-    return 'Full name must be at least 3 characters';
-  }
-
-  final nameRegex = RegExp(r'^[a-zA-Z\s]+$');
-
-  if (!nameRegex.hasMatch(value.trim())) {
-    return 'Full name must contain letters only';
-  }
-
-  return null;
- }
 
   static String? otp(String code) {
     if (code.length != 4) {

@@ -2,11 +2,13 @@ import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
+  static bool _isInitialized = false;
+
   static final Dio dio = Dio(
     BaseOptions(
-      baseUrl: 'http://10.0.2.2:5000/api',
-      connectTimeout: const Duration(seconds: 10),
-      receiveTimeout: const Duration(seconds: 10),
+      baseUrl: 'https://smartops2026backend.onrender.com/api',
+      connectTimeout: const Duration(seconds: 20),
+      receiveTimeout: const Duration(seconds: 20),
       headers: {
         'Content-Type': 'application/json',
       },
@@ -14,6 +16,8 @@ class ApiService {
   );
 
   static void init() {
+    if (_isInitialized) return;
+
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
@@ -31,5 +35,7 @@ class ApiService {
         },
       ),
     );
+
+    _isInitialized = true;
   }
 }
