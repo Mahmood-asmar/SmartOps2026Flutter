@@ -10,12 +10,36 @@ class AuthProvider extends ChangeNotifier {
   Map<String, dynamic>? get user => _user;
   String? get token => _token;
   bool get isLoading => _isLoading;
+
   bool get isAuthenticated => _token != null && _token!.isNotEmpty;
+
+  String get role => (_user?['role'] ?? '').toString();
+
+  bool get isAdmin => role == 'admin';
+  bool get isEmployee => role == 'employee';
+  bool get isClient => role == 'client';
+
+  String get userName => (_user?['name'] ?? 'User').toString();
+  String get userEmail => (_user?['email'] ?? '').toString();
 
   Future<void> loadAuthData() async {
     _token = await AuthStorage.getToken();
     _user = await AuthStorage.getUser();
+
     notifyListeners();
+  }
+
+  Future<void> refreshCurrentUser() async {
+    if (!isAuthenticated) return;
+
+    final data = await AuthService.getMe();
+    final freshUser = data['user'] ?? data['data'] ?? data;
+
+    if (freshUser is Map<String, dynamic>) {
+      _user = freshUser;
+      await AuthStorage.saveUser(freshUser);
+      notifyListeners();
+    }
   }
 
   Future<void> login({

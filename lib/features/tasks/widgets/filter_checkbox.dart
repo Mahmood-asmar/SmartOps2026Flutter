@@ -14,21 +14,31 @@ class FilterCheckbox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Checkbox(
-          value: value,
-          activeColor: const Color(0xFF0B2E59),
-          onChanged: onChanged,
+    return InkWell(
+      onTap: () => onChanged(!value),
+      borderRadius: BorderRadius.circular(10),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2),
+        child: Row(
+          children: [
+            Checkbox(
+              value: value,
+              activeColor: const Color(0xFF0B2E59),
+              onChanged: onChanged,
+            ),
+            Expanded(
+              child: Text(
+                title,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Color(0xFF0B2E59),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
         ),
-        Text(
-          title,
-          style: const TextStyle(
-            color: Color(0xFF0B2E59),
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ],
+      ),
     );
   }
 }
