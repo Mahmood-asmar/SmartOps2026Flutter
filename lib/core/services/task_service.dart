@@ -21,6 +21,34 @@ class TaskService {
     }
   }
 
+  static Future<Map<String, dynamic>> createTask({
+    required String title,
+    required String description,
+    required int assignedUser,
+    required int projectId,
+    required String deadline,
+    required String priority,
+  }) async {
+    try {
+      final response = await ApiService.dio.post(
+        '/tasks',
+        data: {
+          'title': title,
+          'description': description,
+          'assigned_user': assignedUser,
+          'project_id': projectId,
+          'deadline': deadline,
+          'priority': priority,
+          'status': 'pending',
+        },
+      );
+
+      return _asMap(response.data);
+    } on DioException catch (error) {
+      throw _handleDioError(error);
+    }
+  }
+
   static Future<Map<String, dynamic>> updateTask({
     required int taskId,
     String? title,
@@ -68,25 +96,15 @@ class TaskService {
     }
   }
 
-  static Future<Map<String, dynamic>> createTask({
-    required String title,
-    required String description,
-    required int assignedUser,
-    required int projectId,
-    required String deadline,
-    required String priority,
+  static Future<Map<String, dynamic>> updateTaskStatus({
+    required int taskId,
+    required String status,
   }) async {
     try {
-      final response = await ApiService.dio.post(
-        '/tasks',
+      final response = await ApiService.dio.patch(
+        '/tasks/$taskId/status',
         data: {
-          'title': title,
-          'description': description,
-          'assigned_user': assignedUser,
-          'project_id': projectId,
-          'deadline': deadline,
-          'priority': priority,
-          'status': 'pending',
+          'status': status,
         },
       );
 
@@ -114,39 +132,50 @@ class TaskService {
     if (data is Map<String, dynamic>) {
       if (data['errors'] is List && (data['errors'] as List).isNotEmpty) {
         final messages = (data['errors'] as List)
-            .map((item) => item['message'].toString())
+            .map((item) {
+          if (item is Map<String, dynamic>) {
+            return item['message']?.toString() ?? '';
+          }
+
+          return item.toString();
+        })
+            .where((message) => message.trim().isNotEmpty)
             .join('\n');
 
-        return Exception(messages);
+        if (messages.trim().isNotEmpty) {
+          return Exception(messages);
+        }
       }
 
       if (data['message'] != null) {
         return Exception(data['message'].toString());
       }
+
+      if (data['error'] != null) {
+        return Exception(data['error'].toString());
+      }
     }
 
     if (statusCode == 400) {
-      return Exception('Invalid task data. Please check the fields.');
+      return Exception('Invalid task data.');
     }
 
     if (statusCode == 401) {
-      return Exception('Unauthorized. Please login again.');
+      return Exception('Please login again.');
     }
 
     if (statusCode == 403) {
-      return Exception('You do not have permission to perform this action.');
+      return Exception('Access denied, you do not have permission');
     }
 
     if (statusCode == 404) {
-      return Exception('Requested task was not found.');
+      return Exception('Task not found.');
     }
 
     if (statusCode == 500) {
       return Exception('Server error. Please try again later.');
     }
 
-    return Exception(
-      'Something went wrong. Status code: ${statusCode ?? 'unknown'}',
-    );
+    return Exception('Something went wrong. Please try again.');
   }
 }

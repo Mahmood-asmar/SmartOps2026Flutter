@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'package:smartops/core/models/task_model.dart';
+import 'package:smartops/core/provider/auth_provider.dart';
 import 'package:smartops/core/services/task_service.dart';
-import 'package:smartops/core/widgets/app_button.dart';
 import 'package:smartops/core/widgets/app_drawer.dart';
 import 'package:smartops/core/widgets/app_footer.dart';
 import 'package:smartops/core/widgets/app_top_bar.dart';
@@ -98,24 +99,26 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
     }
   }
 
-  Future<void> _markAsComplete() async {
+  Future<void> _updateTaskStatus(String newStatus) async {
+    if (task.status == newStatus) return;
+
     setState(() => isUpdating = true);
 
     try {
-      await TaskService.updateTask(
+      await TaskService.updateTaskStatus(
         taskId: task.taskId,
-        status: 'completed',
+        status: newStatus,
       );
 
       setState(() {
-        task = task.copyWith(status: 'completed');
+        task = task.copyWith(status: newStatus);
       });
 
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Task marked as complete.'),
+        SnackBar(
+          content: Text('Task status updated to ${_formatLabel(newStatus)}.'),
           backgroundColor: Colors.green,
         ),
       );
@@ -227,10 +230,103 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
     );
   }
 
+  Widget _buildStatusControl({
+    required bool canChangeStatus,
+  }) {
+    if (!canChangeStatus) {
+      return const SizedBox.shrink();
+    }
+
+    final safeStatus =
+    ['pending', 'in_progress', 'completed'].contains(task.status)
+        ? task.status
+        : 'pending';
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE9EEF5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'UPDATE TASK STATUS',
+            style: TextStyle(
+              color: Color(0xFF98A2B3),
+              fontSize: 11,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 1,
+            ),
+          ),
+          const SizedBox(height: 12),
+          DropdownButtonFormField<String>(
+            value: safeStatus,
+            items: const [
+              DropdownMenuItem(
+                value: 'pending',
+                child: Text('Pending'),
+              ),
+              DropdownMenuItem(
+                value: 'in_progress',
+                child: Text('In Progress'),
+              ),
+              DropdownMenuItem(
+                value: 'completed',
+                child: Text('Completed'),
+              ),
+            ],
+            onChanged: isUpdating
+                ? null
+                : (value) {
+              if (value != null) {
+                _updateTaskStatus(value);
+              }
+            },
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: const Color(0xFFE8EBEF),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
+            ),
+            style: const TextStyle(
+              color: Color(0xFF0B2E59),
+              fontWeight: FontWeight.w800,
+              fontSize: 13,
+            ),
+          ),
+          if (isUpdating) ...[
+            const SizedBox(height: 12),
+            const LinearProgressIndicator(
+              color: Color(0xFF0B2E59),
+              minHeight: 4,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final assignedTo =
         task.assignedUserEmail ?? task.assignedUserName ?? 'Unassigned';
+
+    final authProvider = context.watch<AuthProvider>();
+    final isAdmin = authProvider.isAdmin;
+    final isEmployee = authProvider.isEmployee;
+
+    final canEditTask = isAdmin;
+    final canChangeStatus = isAdmin || isEmployee;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
@@ -385,58 +481,32 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
 
                   const SizedBox(height: 20),
 
-                  SizedBox(
-                    width: double.infinity,
-                    height: 54,
-                    child: ElevatedButton.icon(
-                      onPressed: isUpdating ? null : _showEditTaskSheet,
-                      icon: const Icon(Icons.edit_outlined),
-                      label: const Text(
-                        'Edit Task',
-                        style: TextStyle(fontWeight: FontWeight.w800),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF0B2E59),
-                        foregroundColor: Colors.white,
-                        disabledBackgroundColor: Colors.grey.shade400,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                  if (canEditTask) ...[
+                    SizedBox(
+                      width: double.infinity,
+                      height: 54,
+                      child: ElevatedButton.icon(
+                        onPressed: isUpdating ? null : _showEditTaskSheet,
+                        icon: const Icon(Icons.edit_outlined),
+                        label: const Text(
+                          'Edit Task',
+                          style: TextStyle(fontWeight: FontWeight.w800),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF0B2E59),
+                          foregroundColor: Colors.white,
+                          disabledBackgroundColor: Colors.grey.shade400,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                       ),
                     ),
-                  ),
+                    const SizedBox(height: 12),
+                  ],
 
-                  const SizedBox(height: 12),
-
-                  SizedBox(
-                    width: double.infinity,
-                    height: 52,
-                    child: OutlinedButton.icon(
-                      onPressed: isUpdating || task.status == 'completed'
-                          ? null
-                          : _markAsComplete,
-                      icon: isUpdating
-                          ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                          : const Icon(Icons.check_circle_outline),
-                      label: Text(
-                        task.status == 'completed'
-                            ? 'Task Completed'
-                            : 'Mark as Complete',
-                        style: const TextStyle(fontWeight: FontWeight.w800),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFF0B2E59),
-                        side: const BorderSide(color: Color(0xFFE4E7EC)),
-                        backgroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
+                  _buildStatusControl(
+                    canChangeStatus: canChangeStatus,
                   ),
 
                   const SizedBox(height: 34),
